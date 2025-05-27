@@ -1,0 +1,15 @@
+for i in range(1, 6):       # 줄 개수
+    for j in range(5 - i):  # 공백 개수
+        print(" ", end="")
+    for k in range(2 * i - 1):  #별 개수
+        print("*", end="")
+    print()
+
+for i in range(4, 0, -1): 
+    for j in range(5 - i):
+        print(" ", end="")
+    for k in range(2 * i - 1):
+        print("*", end="")
+    print()
+
+# 2021041017 김규현 2주차-1 별찍기 과제

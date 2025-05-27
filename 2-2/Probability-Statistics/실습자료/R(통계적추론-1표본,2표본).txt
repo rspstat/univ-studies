@@ -1,0 +1,150 @@
+# 7장 강의노트 : 예제2-정규분포
+# 표본분포의 확률계산 : 정규분포(P(x>=60500), P(barx<=48000), X~N(5만, 1.4만^2)
+# P(X<=x) = pnorm(x, 평균, 표준편차)
+# P(X>=x) = 1-pnorm(x, 평균, 표준편차)
+# 모집단의 분포 문제 :
+1-pnorm(60500, 50000, 14000)
+
+# 표본분포의 문제 : n=49
+# 표본분포의 평균=mu=5만, 표본분포의 표준편차=sigma/sqrt(n)=2000
+# P(barX<=barx) = pnorm(barx, 표본분포의 평균, 표본분포의 표준편차)
+pnorm(48000, 50000, 2000)
+
+# 7장 강의노트 : 예제5-T분포
+# 표본분포의 확률계산 : T-분포: P(barx<=3.58mm)
+# X~N(4, sigma^2)->분산모름, n=16
+barx=3.58; n=16; mu=4; s=0.8
+t=(barx-mu)/(s/sqrt(n)) ; t
+pt(t,n-1)
+
+# 7장 강의노트 : 예제6- 비율관련 확률계산
+# 비율분포 : barp~N(p, p(1-p)/n) -> n=100, 대표본 : P(0.85<=barp <=0.95)
+# Z=(barp - p)/sqrt(p(1-p)/sqrt(n))
+n=100; p=0.9 ; mu=0.9
+sigma=sqrt(p*(1-p)/n)
+prob=pnorm(0.95, mu, sigma)-pnorm(0.85, mu, sigma)
+prob
+
+# 이항분포 확률계산 : X~B(n, p)=B(100, 0.9), P(85<=X<=95)
+pbinom(95,100,0.9)-pbinom(85,100,0.9)
+
+#이항분포의 정규근사 : X~ N(90, 3^2), P(85<=X<=95)
+pnorm(95, 90, 3)-pnorm(85, 90, 3) 
+
+
+# 8-9장 -한 집단 통계적추론 : 점추정, 구간추정, 검정
+x=c(1009,1280,1180,1255,1547,2352,1956,1080,1776,1767,1680,2050,1452,2857,3100,1621)
+
+# 정규분포 : 점추정과 구간추정-분산알때
+mean(x); sd(x)
+z.test=function(x, sigma, conf.level){
+n=length(x)
+xbar=mean(x)
+alpha=1-conf.level; zstar=qnorm(1-alpha/2)
+SE=sigma/sqrt(n)
+xbar+c(-zstar*SE, zstar*SE)}
+z.test(x, 200, 0.95)
+
+# T분포 : 점추정과 구간추정-소표본, 분산모를때
+mean(x); sd(x)
+ttest=function(x, conf.level){
+n=length(x)
+xbar=mean(x)
+alpha=1-conf.level; tstar=qt(1-alpha/2, df=n-1)
+SE=sd(x)/sqrt(n)
+xbar+c(-tstar*SE, tstar*SE)}
+ttest(x, 0.95)
+
+# 동일한 조건에서 정규분포와 T-분포의 신뢰구간 비교
+mean(x); sd(x)
+ttest=function(x, conf.level){
+n=length(x)
+xbar=mean(x)
+sigma=200
+alpha=1-conf.level; tstar=qt(1-alpha/2, df=n-1)
+SE=sigma/sqrt(n)
+xbar+c(-tstar*SE, tstar*SE)}
+ttest(x, 0.95)
+
+# 1표본 Z-test, t-test
+# 방법-1 : 기각력(임계치)판정
+n=length(x); mu=1600; sigma=200; alpha=0.05
+Z=(mean(x)-mu)/(sigma/sqrt(n)); 
+Z; qnorm(1-alpha/2)
+
+# 방법-2 : 유의확률(p-value)판정 : 양측검정, 단측검정
+# 단측검정
+pvalue=1-pnorm(Z); 
+pvalue; alpha
+
+# 양측검정
+pvalue=2*(1-pnorm(Z))
+pvalue; alpha
+
+# 소표본, 분산모름- T-검정
+# 기각력
+T=(mean(x)-mu)/(sd(x)/sqrt(n))
+T; qt(1-alpha/2, df=n-1)
+
+# 유의확률(p-value) 판정 : 양측검정, 단측검정
+# 단측검정
+pvalue=1-pt(T, df=n-1)
+pvalue; alpha
+
+# 양측검정
+pvalue=2*(1-pt(T, df=n-1))
+pvalue; alpha
+
+# 1표본 t.test함수 활용 - option : 우측-alternative="greater", 좌측-alternative="less")
+y=c(5260,5470,5640,6180,6390,6515,6805,7515,7515,8230,8770)
+t.test(y, mu=7725)
+
+# t-test 결과의 검정통계량 : 기각력(결과에 없음) 구해야함
+qt(1-alpha/2, df=n-1)
+
+# 비율에 대한 가설검정 : 대표본 정규근사방법
+# 1표본 proportion-test, prop.test(x, n, p, alternative="greater")
+# 단측검정 결과 :
+prop.test(455, 700, 0.6, alternative="greater")
+
+# 카이제곱(X^2) ~ Z^2 근사관계 : 단측검정에서 기각력
+alpha=0.05
+Z=sqrt(7.0848)
+Zalpha=qnorm(1-alpha)
+Z; Zalpha
+
+# 양측검정 결과 :
+prop.test(455, 700, 0.6)
+
+# 카이제곱(X^2) ~ Z^2 근사관계 : 양측검정에서 기각력
+alpha=0.05
+Z=sqrt(7.0848)
+Zalpha=qnorm(1-alpha/2)
+Z; Zalpha
+
+
+## 두집단 통계적추론
+
+desa=read.csv("대사중후군.csv", header=T)
+attach(desa)
+str(desa)
+exco=factor(exco, levels=c(1,2), labels=c("실험군", "대조군"))
+# 등분산 검정- var.test()
+var.test(lifescore~exco)
+
+# 독립 2표본 t-test(연속형~범주형, mu, alternative=c("less", "greater"), var.equal=T)
+t.test(lifescore~exco, mu=0, var.equal=F)
+var.test(wc2~exco); t.test(wc2~exco, mu=0, var.equal=F)
+
+# 대응표본 :t.test함수 활용 - option : paired=T
+t.test(wc1, wc2, paired=T)
+t.test(tg1, tg2, paired=T)
+
+# 2표본 proportion-test, prop.test(x(g1,g2), n(g1,g2), correct=T)
+prop.test(x=c(20, 10), n=c(50, 50), correct=T, conf.level=0.95)
+prop.test(x=c(20, 10), n=c(50, 50), correct=T, alt= "greater", conf.level=0.99)
+
+prop.test(x=c(21, 38), n=c(100, 100), correct=F, alt= "less", conf.level=0.99)
+prop.test(x=c(21, 38), n=c(100, 100), correct=F, conf.level=0.99)
+
+

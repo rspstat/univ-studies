@@ -1,0 +1,49 @@
+#이항분포 n=10, p=0.3, 0.5, 0.7일 때의 변화
+par(mfrow=c(1,3))
+x=c(0:10); y1=dbinom(x,10,0.3)
+plot(x,y1, type="h", xlab="x", ylab="f(x)", ylim=c(0,0.3), main="p=0.3")
+y2=dbinom(x,10,0.5)
+plot(x,y2,type="h", xlab="x", ylab="f(x)", ylim=c(0,0.3), main="p=0.5")
+y3=dbinom(x,10,0.7)
+plot(x,y3,type="h", xlab="x", ylab="f(x)", ylim=c(0,0.3), main="p=0.7")
+
+#이항분포 확률계산 : x~B(20,0.3)~P(x=8), P(X<=11), P(6<=X<=12)
+dbinom(x=8, size=20, prob=0.3)
+pbinom(q=11, size=20, prob=0.3)
+pbinom(12, 20, 0.3)- pbinom(5, 20, 0.3)
+
+#초기하분포(x, m, n, k)=(확률변수, 관심사건수, 무관심사건수, 실험횟수)
+x=c(0:6); fx=dhyper(x, m=6, n=39, k=6); fx; 1/fx; sum(fx)
+x; 1/fx
+px2=dhyper(5, 6, 39, 6)*(1/39); px2; 1/px2
+px3=1-phyper(2, 6, 39, 6); px3
+
+#포아송분포 : x~P(lambda)=P(4)-한달(4주)에 4건 사고나는 교차로
+dpois(2, 4)           #어떤 달에 교통사고가 2번 일어날 확률 
+dpois(3, 4)           #어떤 달에 교통사고가 3건이하 일어날 확률
+1-ppois(1, 1)         #어떤 주에 교통사고가 2건이상 일어날 확률
+
+#정규분포 : X~N(30,4^2) - f(x=37), f(x<=37), 25%(1사분위수)
+dnorm(x=37, mean=30, sd=4)
+pnorm(q=37, mean=30, sd=4)
+qnorm(p=0.25, mean=30, sd=4)
+pnorm(1)-pnorm(-1)   #p(-1<=Z<=1)
+pnorm(2)-pnorm(-2)   #p(-2<=Z<=2)
+pnorm(3)-pnorm(-3)   #p(-3<=Z<=3)
+
+#이항분포의 정규근사 : X~B(15, 0.4), N(6, 1.9^2)
+pbinom(10,15,0.4)-pbinom(7,15,0.4)      # 이항분포~P(8<=X<=10)
+pnorm(10, 6, 1.9)-pnorm(8, 6, 1.9)      # 정규분포~P(8<=X<=10)
+pnorm(10.5, 6, 1.9)-pnorm(7.5, 6, 1.9)  # 연속성수정~P(7.5<=X<=10.5)
+
+#표본분포의 확률계산 : 정규분포(P(x>=60500), P(barx<=48000), X~N(5만, 1.4만^2)
+1-pnorm(60500, 50000, 14000)
+pnorm(48000, 50000, 2000)
+
+#표본분포의 확률계산 : T-분포: P(barx<=3.58mm), t-분포의 상위 15%위치
+# X~N(4, sigma^2)->분산모름, n=16
+barx=3.58; n=16; mu=4; s=0.8
+t=(barx-mu)/(s/sqrt(n))
+t; pt(t,n-1)
+qt(0.85, 15)
+1.074*(s/sqrt(n))+mu

@@ -1,0 +1,18 @@
+num = input("입력 진수 결정(16/10/8/2) : ")
+num2 = input("값 입력 : ")
+
+if num == "2":
+    res = int(num2, 2)
+elif num == "8":
+    res = int(num2, 8)
+elif num == "10":
+    res = int(num2)
+elif num == "16":
+    res = int(num2, 16)
+
+print("16진수 ==> ", hex(res))
+print("10진수 ==> ", res)
+print(" 8진수 ==> ", oct(res))
+print(" 2진수 ==> ", bin(res))
+
+# 2021041017 김규현 2주차-2 진법변환 과제

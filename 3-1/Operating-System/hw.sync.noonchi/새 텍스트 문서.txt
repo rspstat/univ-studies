@@ -1,0 +1,148 @@
+// C 코드
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <time.h>
+
+// 공유 자원 및 동기화 객체
+int n;
+int noonchi = 1;                 // 공유 변수 noonchi, 초기값 1
+int *thread_k;                   // 각 쓰레드가 선택한 숫자를 저장하는 배열
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+
+// 쓰레드 함수
+void *thread_func(void *arg) {
+    int index = (int)(intptr_t) arg;
+    int thread_id = index + 1;
+    int k = thread_k[index];
+
+    pthread_mutex_lock(&mutex);
+    // 자신의 k 순서가 올 때까지 대기 (게임 종료 or 자신의 턴이 될 때까지)
+    while (noonchi != k && noonchi != n) {
+        pthread_cond_wait(&cond, &mutex);
+    }
+    // 깨어났을 때, 두 가지 조건을 확인
+    if (noonchi == n) {
+        // 게임이 종료되었는데 자신의 턴을 얻지 못한 경우 -> 패배
+        printf("쓰레드 %d: 패배\n", thread_id);
+        pthread_mutex_unlock(&mutex);
+        return NULL;
+    }
+    // noonchi == k인 경우 -> 자신의 턴이므로 숫자를 "외침"
+    printf("쓰레드 %d: k=%d, noonchi=%d\n", thread_id, k, noonchi);
+    // 공유 변수 noonchi 값을 1 증가
+    noonchi++;
+    // noonchi 값 변경 후, 다른 쓰레드들에게 알림
+    // (모든 쓰레드를 깨워서 조건을 다시 평가하도록 함으로써 공평하게 진행):contentReference[oaicite:15]{index=15}
+    pthread_cond_broadcast(&cond);
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "사용법: %s n\n", argv[0]);
+        return 1;
+    }
+    n = atoi(argv[1]);
+    if (n <= 1) {
+        fprintf(stderr, "n은 1보다 큰 정수여야 합니다.\n");
+        return 1;
+    }
+
+    // 동적 메모리 할당
+    thread_k = malloc(sizeof(int) * n);
+    if (thread_k == NULL) {
+        perror("malloc 실패");
+        return 1;
+    }
+
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&cond, NULL);
+    srand(time(NULL));
+
+    // 각 쓰레드의 k 값을 무작위로 선택 (1 이상 n-1 이하)
+    for (int i = 0; i < n; ++i) {
+        thread_k[i] = (rand() % (n - 1)) + 1;
+    }
+
+    // 데드락 방지를 위한 숫자 커버리지 조정:
+    // 1 ~ n-1 중 선택된 쓰레드가 없는 숫자가 있다면 중복 선택된 쓰레드를 그 숫자로 재할당
+    int *count = calloc(n, sizeof(int));
+    if (count == NULL) {
+        perror("calloc 실패");
+        return 1;
+    }
+    for (int i = 0; i < n; ++i) {
+        if (thread_k[i] < n) {           // (thread_k 값이 1..n-1 범위)
+            count[ thread_k[i] ]++;
+        }
+    }
+    for (int number = 1; number < n; ++number) {
+        if (count[number] == 0) {
+            // 이 number를 선택한 쓰레드가 없을 경우 -> 다른 곳에서 중복된 쓰레드를 재배정
+            for (int j = 1; j < n; ++j) {
+                if (count[j] > 1) {
+                    // 숫자 j를 중복 선택한 쓰레드 중 하나를 찾아서
+                    for (int t = 0; t < n; ++t) {
+                        if (thread_k[t] == j) {
+                            // 해당 쓰레드의 숫자를 현재의 누락된 number로 바꿈
+                            thread_k[t] = number;
+                            count[j]--;
+                            count[number]++;
+                            break;
+                        }
+                    }
+                }
+                if (count[number] == 1) break;  // 찾았으면 루프 종료
+            }
+        }
+    }
+    free(count);
+
+    // n개의 쓰레드 생성
+    pthread_t *threads = malloc(sizeof(pthread_t) * n);
+    if (threads == NULL) {
+        perror("malloc 실패");
+        return 1;
+    }
+    for (int i = 0; i < n; ++i) {
+        if (pthread_create(&threads[i], NULL, thread_func, (void*)(intptr_t)i) != 0) {
+            fprintf(stderr, "쓰레드 생성 실패 (i=%d)\n", i);
+            return 1;
+        }
+    }
+
+    // 모든 쓰레드가 종료될 때까지 대기 (join)
+    for (int i = 0; i < n; ++i) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // 자원 정리
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
+    free(thread_k);
+    free(threads);
+    return 0;
+}
+
+// make file
+
+# 컴파일 설정
+CC     = gcc
+CFLAGS = -Wall -pthread
+
+TARGET = noonchi
+
+all: $(TARGET)
+
+$(TARGET): $(TARGET).c
+	$(CC) $(CFLAGS) -o $@ $^
+
+clean:
+	rm -f $(TARGET)
+
+// URL
+https://chatgpt.com/c/681450f4-8840-800a-a95f-49bd0dd6fc89

@@ -1,0 +1,5 @@
+s1 = input("문자열을 입력하세요 : ")
+s1_list = list(s1)
+s1_list.reverse()
+s2 = ''.join(s1_list)
+print("내용을 거꾸로 출력 : %s" %(s2), end="")

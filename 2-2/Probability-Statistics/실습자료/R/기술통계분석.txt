@@ -1,0 +1,59 @@
+# 외부데이터 불러오기(텍스트파일)
+geyser <- read.table("geyser299.txt",header=T)
+attach(geyser)
+geyser
+geyser[1:5,]
+hist(waiting)
+stem(waiting)
+plot(waiting, duration)
+cor(waiting, duration)
+
+boxplot(waiting)
+
+length(waiting); mean(waiting); mean(waiting, trim=1/10); median(waiting)
+range(waiting); min(waiting); max(waiting); var(waiting); sd(waiting)
+quantile(waiting); IQR(waiting)
+cv=sd(waiting)/mean(waiting)
+sk=3*(mean(waiting)-median(waiting))/sd(waiting)
+cv; sk
+
+# 외부자료 불러오기 및 코딩변경(변수이름 부여, 숫자형을 범주형으로변환
+ex1=read.csv("ex1.csv", header=T)
+str(ex1)
+attach(ex1); ex1
+names(ex1)=c("응답자", "성별", "혈액형", "선호색", "연령", "동기", "만족도")
+attach(ex1); View(ex1)
+성별=factor(성별, levels=c(1,2), labels=c("남자", "여자")); 성별
+혈액형=factor(혈액형, levels=c(1,2,3,4),labels=c("A", "B", "AB", "O")); 혈액형
+동기=factor(동기, levels=c(1,2,3,4,5,6), 
+    labels=c("tv", "radio", "신문", "저널", "소개", "기타")); 동기
+ex1.f=data.frame(응답자, 성별, 혈액형, 선호색, 연령, 동기, 만족도)
+attach(ex1.f); ex1.f
+
+# 기술통계(표, 그래프) : 도수분포표, 상대도수분포표, 막대도표, 히스토그램, cat(category)
+table(혈액형); prop.table(table(혈액형))
+table(연령) 
+cat.age=cut(연령, breaks=c(10,19,29,39,49)); cat.age; table(cat.age)
+levels(cat.age)=c("20미만", "20대", "30대", "40대"); table(cat.age)
+barplot(table(혈액형)); barplot(table(cat.age))
+hist(연령)
+hist(연령, breaks=c(10,19,29,39,49),prob=T, main="고객연령에 대한 히스토그램")
+stem(연령); stem(연령, scale=2) # 줄기의 마디수 늘리기
+boxplot(연령, main="고객연령에 대한 상자그림")
+
+# 기술통계(수치, 통계량) : 기초통계량(중심경향, 산포경향, 분포경향)
+length(연령); mean(연령); mean(연령, trim=1/10); median(연령)
+range(연령); min(연령); max(연령); var(연령); sd(연령)
+quantile(연령); IQR(연령)
+cv_age=sd(연령)/mean(연령)
+sk_age=3*(mean(연령)-median(연령))/sd(연령)
+cv_age; sk_age
+
+summary(연령)
+
+# geyser 자료에 대한 기초통계량 summary
+geyser <- read.table("geyser299.txt",header=T)
+attach(geyser)
+summary(waiting)
+par(mfrow=c(1,2))
+boxplot(waiting); boxplot(duration)
